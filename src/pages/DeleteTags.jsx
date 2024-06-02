@@ -1,48 +1,44 @@
+// src/pages/DeleteTags.js
 import React, { useState } from 'react';
-import axios from 'axios';
+import { fetchTags, deleteTag, deleteAllTags, fetchTagsForDelete } from '../utils/api'; // Adjust the path as needed
 
 const DeleteTags = () => {
   const [tags, setTags] = useState([]); // State to store tags
   const [isDeleting, setIsDeleting] = useState(false); // State to manage deleting status
 
-  // Function to fetch tags from the API
-  const fetchTags = () => {
-    axios.get('https://5knptmetu2.execute-api.us-east-1.amazonaws.com/test/api/v1/tags/fetch-all-tags')
-      .then(response => {
-        const sortedTags = [...response.data].sort((a, b) => a.name.localeCompare(b.name)); // Sort tags alphabetically
-        setTags(sortedTags); // Set sorted tags to the state
-      })
-      .catch(error => console.log('Error fetching tags:', error)); // Handle fetch error
+  // Function to handle fetching tags
+  const handleFetchTags = async () => {
+    try {
+      const fetchedTags = await fetchTagsForDelete();
+      setTags(fetchedTags);
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+    }
   };
 
-  // Function to delete a specific tag
-  const deleteTag = (id) => {
-    axios.delete(`https://5knptmetu2.execute-api.us-east-1.amazonaws.com/test/api/v1/tags/delete-tags/${id}`, {
-      headers: {
-        'x-api-key': import.meta.env.VITE_API_KEY
-      }
-    })
-    .then(() => {
+  // Function to handle deleting a specific tag
+  const handleDeleteTag = async (id) => {
+    try {
+      await deleteTag(id);
       setTags(tags.filter(tag => tag.id !== id));
       alert(`Tag ${id} deleted successfully`);
-    })
-    .catch(error => console.log('Error deleting tag:', error));
+    } catch (error) {
+      console.error('Error deleting tag:', error);
+    }
   };
 
-  // Function to delete all tags
-  const deleteAllTags = async () => {
+  // Function to handle deleting all tags
+  const handleDeleteAllTags = async () => {
     if (window.confirm('Are you sure you want to delete all tags?')) {
       setIsDeleting(true);
-      for (let tag of tags) {
-        await axios.delete(`https://5knptmetu2.execute-api.us-east-1.amazonaws.com/test/api/v1/tags/delete-tags/${tag.id}`, {
-          headers: {
-            'x-api-key': import.meta.env.VITE_API_KEY
-          }
-        })
-        .catch(error => console.log(`Error deleting tag ${tag.id}:`, error));
+      try {
+        await deleteAllTags(tags);
+        setTags([]);
+      } catch (error) {
+        console.error('Error deleting all tags:', error);
+      } finally {
+        setIsDeleting(false);
       }
-      setIsDeleting(false);
-      setTags([]);
     }
   };
 
@@ -52,7 +48,7 @@ const DeleteTags = () => {
         <div className="flex justify-between mb-4">
           {/* Button to fetch all tags */}
           <button
-            onClick={fetchTags}
+            onClick={handleFetchTags}
             disabled={isDeleting}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
           >
@@ -60,7 +56,7 @@ const DeleteTags = () => {
           </button>
           {/* Button to delete all tags */}
           <button
-            onClick={deleteAllTags}
+            onClick={handleDeleteAllTags}
             disabled={isDeleting || tags.length === 0}
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
           >
@@ -84,7 +80,7 @@ const DeleteTags = () => {
                 <td className="py-2 px-4">
                   {/* Button to delete a specific tag */}
                   <button
-                    onClick={() => deleteTag(tag.id)}
+                    onClick={() => handleDeleteTag(tag.id)}
                     disabled={isDeleting}
                     className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition"
                   >
