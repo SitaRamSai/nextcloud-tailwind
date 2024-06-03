@@ -1,5 +1,45 @@
 import axios from 'axios';
 
+
+export const createTag = async (tagName) => {
+  try {
+    const response = await axios.post('https://5knptmetu2.execute-api.us-east-1.amazonaws.com/test/api/v1/tags/create-tag', { tagName }, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating tag:', error);
+    throw error;
+  }
+};
+
+export const getTagId = async (tagName) => {
+  try {
+    const response = await axios.get(`https://ibzok4z239.execute-api.us-east-1.amazonaws.com/test/nextcloud/tags?tagName=${tagName}`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return response.data.tags[0].tagId;
+  } catch (error) {
+    console.error('Error getting tag ID:', error);
+    throw error;
+  }
+};
+
+export const assignTagToFiles = async (fileIds, tagId) => {
+  try {
+    const response = await axios.put('https://5knptmetu2.execute-api.us-east-1.amazonaws.com/test/api/v1/tags/assign-tag', {
+      fileIds,
+      tagId
+    }, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error assigning tag to files:', error);
+    throw error;
+  }
+};
+
 export const fetchTags = async (searchTerm) => {
   try {
     const response = await axios.get(`https://ibzok4z239.execute-api.us-east-1.amazonaws.com/test/nextcloud/tags?tagName=${searchTerm}`);
@@ -140,7 +180,7 @@ export const uploadFiles = async (files) => {
     formDataToSend.append('files', fileObj.file);
   });
 
-  const response = await fetch('http://localhost:3001/upload', {
+  const response = await fetch('https://5knptmetu2.execute-api.us-east-1.amazonaws.com/test/api/v1/files/upload-files', {
     method: 'POST',
     body: formDataToSend,
   });
@@ -153,7 +193,7 @@ export const uploadFiles = async (files) => {
 };
 
 export const submitPolicyData = async (policyData) => {
-  const response = await fetch('http://localhost:3001/submit-policy', {
+  const response = await fetch('https://gzqd4dt6i7.execute-api.us-east-1.amazonaws.com/test/api/v1/policy', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
