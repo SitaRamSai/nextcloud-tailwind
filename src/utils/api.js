@@ -167,3 +167,50 @@ export const submitPolicyData = async (policyData) => {
 
   return response.json();
 };
+
+// Function to fetch tags from the API
+export const fetchTagsForDelete = async () => {
+  try {
+    const response = await axios.get('https://5knptmetu2.execute-api.us-east-1.amazonaws.com/test/api/v1/tags/fetch-all-tags');
+    return response.data.sort((a, b) => a.name.localeCompare(b.name)); // Sort tags alphabetically
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    throw error;
+  }
+};
+
+// Function to delete a specific tag
+export const deleteTag = async (id) => {
+  try {
+    await axios.delete(`https://5knptmetu2.execute-api.us-east-1.amazonaws.com/test/api/v1/tags/delete-tags/${id}`, {
+      headers: {
+        'x-api-key': process.env.REACT_APP_AWS_API_GATEWAY_DELETE_API_KEY // Use REACT_APP_ prefix
+      }
+    });
+  } catch (error) {
+    console.error('Error deleting tag:', error);
+    throw error;
+  }
+};
+
+// Function to delete all tags
+export const deleteAllTags = async (tags) => {
+  const headers = {
+    'x-api-key': process.env.REACT_APP_AWS_API_GATEWAY_DELETE_API_KEY // Use REACT_APP_ prefix
+  };
+
+  const errors = [];
+
+  for (let tag of tags) {
+    try {
+      await axios.delete(`https://5knptmetu2.execute-api.us-east-1.amazonaws.com/test/api/v1/tags/delete-tags/${tag.id}`, { headers });
+    } catch (error) {
+      console.error(`Error deleting tag ${tag.id}:`, error);
+      errors.push(error);
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error('Some tags could not be deleted');
+  }
+};
